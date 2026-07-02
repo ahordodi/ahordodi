@@ -1,2 +1,5 @@
 # Sesión de WhatsApp y base de datos local de mensajes: nunca deben commitearse
 store/
+
+# Binarios compilados (se distribuyen aparte, no se versionan)
+*.exe
