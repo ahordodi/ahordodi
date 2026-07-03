@@ -27,9 +27,21 @@ if (-not $uvCmd) {
     $uvPath = $uvCmd.Source
 }
 
-$claudeDir = Join-Path $env:APPDATA "Claude"
-if (-not (Test-Path $claudeDir)) {
-    New-Item -ItemType Directory -Path $claudeDir -Force | Out-Null
+# Si Claude Desktop se instalo como app empaquetada (MSIX/Store), Windows
+# redirige %APPDATA%\Claude a una carpeta dentro de AppData\Local\Packages.
+# Si existe esa carpeta, es la que la app realmente usa.
+$packagedDir = Get-ChildItem "$env:LOCALAPPDATA\Packages" -Filter "Claude_*" -Directory -ErrorAction SilentlyContinue |
+    ForEach-Object { Join-Path $_.FullName "LocalCache\Roaming\Claude" } |
+    Where-Object { Test-Path $_ } |
+    Select-Object -First 1
+
+if ($packagedDir) {
+    $claudeDir = $packagedDir
+} else {
+    $claudeDir = Join-Path $env:APPDATA "Claude"
+    if (-not (Test-Path $claudeDir)) {
+        New-Item -ItemType Directory -Path $claudeDir -Force | Out-Null
+    }
 }
 $configPath = Join-Path $claudeDir "claude_desktop_config.json"
 
