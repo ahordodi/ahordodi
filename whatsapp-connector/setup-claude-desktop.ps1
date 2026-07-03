@@ -74,7 +74,9 @@ if (Get-Member -InputObject $config.mcpServers -Name "whatsapp" -MemberType Note
 }
 
 $json = $config | ConvertTo-Json -Depth 10
-Set-Content -Path $configPath -Value $json -Encoding UTF8
+# Escribir UTF-8 SIN BOM: Set-Content -Encoding UTF8 en PowerShell 5.1 agrega
+# un BOM que el parser JSON de Claude Desktop rechaza.
+[System.IO.File]::WriteAllText($configPath, $json, (New-Object System.Text.UTF8Encoding($false)))
 
 Write-Host "Listo. Configuracion escrita en:" -ForegroundColor Green
 Write-Host "  $configPath"
