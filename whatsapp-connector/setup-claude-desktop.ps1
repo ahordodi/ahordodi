@@ -30,7 +30,7 @@ if (-not $uvCmd) {
 # Si Claude Desktop se instalo como app empaquetada (MSIX/Store), Windows
 # redirige %APPDATA%\Claude a una carpeta dentro de AppData\Local\Packages.
 # Si existe esa carpeta, es la que la app realmente usa.
-$packagedDir = Get-ChildItem "$env:LOCALAPPDATA\Packages" -Filter "Claude_*" -Directory -ErrorAction SilentlyContinue |
+$packagedDir = Get-ChildItem "$env:LOCALAPPDATA\Packages" -Filter "Claude_*" -Directory -Force -ErrorAction SilentlyContinue |
     ForEach-Object { Join-Path $_.FullName "LocalCache\Roaming\Claude" } |
     Where-Object { Test-Path $_ } |
     Select-Object -First 1
