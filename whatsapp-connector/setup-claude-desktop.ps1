@@ -33,24 +33,32 @@ if (-not (Test-Path $claudeDir)) {
 }
 $configPath = Join-Path $claudeDir "claude_desktop_config.json"
 
+# Se usa PSCustomObject (no -AsHashtable) para que funcione igual en
+# Windows PowerShell 5.1 y en PowerShell 7+.
 if (Test-Path $configPath) {
     $raw = Get-Content $configPath -Raw
     if ([string]::IsNullOrWhiteSpace($raw)) {
-        $config = [ordered]@{}
+        $config = New-Object PSObject
     } else {
-        $config = $raw | ConvertFrom-Json -AsHashtable
+        $config = $raw | ConvertFrom-Json
     }
 } else {
-    $config = [ordered]@{}
+    $config = New-Object PSObject
 }
 
-if (-not $config.ContainsKey("mcpServers")) {
-    $config["mcpServers"] = [ordered]@{}
+if (-not (Get-Member -InputObject $config -Name "mcpServers" -MemberType NoteProperty)) {
+    $config | Add-Member -NotePropertyName "mcpServers" -NotePropertyValue (New-Object PSObject)
 }
 
-$config["mcpServers"]["whatsapp"] = [ordered]@{
+$whatsappEntry = [PSCustomObject]@{
     command = $uvPath
     args    = @("--directory", $mcpServerDir, "run", "main.py")
+}
+
+if (Get-Member -InputObject $config.mcpServers -Name "whatsapp" -MemberType NoteProperty) {
+    $config.mcpServers.whatsapp = $whatsappEntry
+} else {
+    $config.mcpServers | Add-Member -NotePropertyName "whatsapp" -NotePropertyValue $whatsappEntry
 }
 
 $json = $config | ConvertTo-Json -Depth 10
